@@ -1,7 +1,7 @@
 import pymel.core as pm
 import sys
 
-path = "F:/maya_python/04_pyside2"
+path = "F:/maya_python/04_pyside2/04_table_view"
 if not path in sys.path:
 	sys.path.append(path)
 

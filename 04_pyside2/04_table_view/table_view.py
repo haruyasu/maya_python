@@ -5,7 +5,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 from shiboken2 import wrapInstance
 
-ICON_DIR = "F:/maya_python/04_pyside2/icon"
+ICON_DIR = "F:/maya_python/04_pyside2/04_table_view/icon"
 
 class Column(object):
     def __init__(self, index, value):
