@@ -11,6 +11,8 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 import shiboken2 as shiboken
 
+import resource
+
 ptr = OpenMayaUI.MQtUtil.mainWindow()
 parent = shiboken.wrapInstance(long(ptr), QWidget)
 
@@ -30,7 +32,6 @@ class setMainWindow(QMainWindow):
         winX = pos.globalX() - self.mc_x
         winY = pos.globalY() - self.mc_y
         self.move(winX, winY)
-
 
 class Gui(setMainWindow):
     def __init__(self):
