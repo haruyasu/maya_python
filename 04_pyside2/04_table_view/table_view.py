@@ -52,9 +52,6 @@ class FileTableModel(QAbstractTableModel):
     def refresh(self, refresh_items=True):
         if refresh_items:
             file_nodes = cmds.ls(type="file")
-
-            print file_nodes
-
             self.set_items(file_nodes)
 
         self.layoutAboutToBeChanged.emit()
@@ -97,6 +94,7 @@ class SwatchDisplayPortDelegate(QItemDelegate):
 
     def paint(self, painter, option, index):
         item = self.items[self.proxy_model.mapToSource(index).row()]
+
         if not self.parent().indexWidget(index) and item.node:
             self.parent().setIndexWidget(index, _create_swatch_display_port_widget(item.node, self.parent()))
 
@@ -221,6 +219,7 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
 
         self.content_stacked_layout.addWidget(self._create_home_ui())
         self.content_stacked_layout.addWidget(self._create_file_nodes_ui())
+        self.content_stacked_layout.addWidget(self._create_manager_ui())
 
         content_layout.addLayout(self.content_stacked_layout)
 
@@ -247,7 +246,7 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         menu_layout.addWidget(nodes_button)
         menu_group.addButton(nodes_button)
 
-        nodes_button = MenuButton("movie", self.content_stacked_layout, 2)
+        nodes_button = MenuButton("movie", self.content_stacked_layout, 1)
         menu_layout.addWidget(nodes_button)
         menu_group.addButton(nodes_button)
 
@@ -316,6 +315,102 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         file_nodes_layout.addWidget(self.table_view)
 
         return file_nodes_root
+
+    def _create_manager_ui(self):
+        info_widget = QFrame(self)
+        info_layout = QVBoxLayout(info_widget)
+
+        category_layout = QGridLayout(self)
+
+        text_label = QLabel("Category")
+        category_layout.addWidget(text_label, 0, 0)
+
+        comboBox = QComboBox(self)
+        comboBox.addItems(["maya", "houdini", "nuke"])
+        comboBox.setEditable(True)
+        comboBox.setMaximumWidth(350)
+        category_layout.addWidget(comboBox, 0, 1)
+
+        lineEdit = QLineEdit()
+        lineEdit.setMaximumWidth(300)
+        lineEdit.setText("Search")
+        category_layout.addWidget(lineEdit, 0, 2)
+
+        category_layout.setColumnStretch(1, 1)
+
+        info_layout.addLayout(category_layout)
+######
+        path_layout = QHBoxLayout(self)
+        path_label = QLabel("Path ")
+        path_layout.addWidget(path_label)
+        path_edit = QLineEdit(self)
+        path_edit.setText("F:/maya_python/04_pyside2/")
+
+        dir_path_edit = "F:/maya_python/04_pyside2/"
+
+        folder_name = os.listdir(dir_path_edit)
+
+        path_layout.addWidget(path_edit)
+        info_layout.addLayout(path_layout)
+#######
+        list_layout = QHBoxLayout(self)
+        listWidget1 = QListWidget()
+        listWidget1.addItems(folder_name)
+
+        listWidget2 = QListWidget()
+        listWidget2.addItems(["this", "is", "list", "widget"])
+
+        listWidget3 = QListWidget()
+        listWidget3.addItems(["this", "is", "list", "widget"])
+        list_layout.addWidget(listWidget1)
+        list_layout.addWidget(listWidget2)
+        list_layout.addWidget(listWidget3)
+        info_layout.addLayout(list_layout)
+
+#######
+        table_layout = QHBoxLayout(self)
+        tableWidget = QTableWidget()
+        headerLabels = ["File", "Size", "Type", "UpdateDateTime"]
+        tableWidget.setColumnCount(len(headerLabels))
+        tableWidget.setHorizontalHeaderLabels(headerLabels)
+        tableWidget.verticalHeader().setVisible(False)
+
+        try:
+            tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        except:
+            tableWidget.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+
+        tableWidget.setAlternatingRowColors(True)
+        tableWidget.horizontalHeader().setStretchLastSection(True)
+        dataList = [
+            ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
+            ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
+        ]
+        tableWidget.setRowCount(len(dataList))
+
+        for row, colData in enumerate(dataList):
+            for col, value in enumerate(colData):
+                item = QTableWidgetItem(value)
+                tableWidget.setItem(row, col, item)
+
+        table_layout.addWidget(tableWidget)
+        info_layout.addLayout(table_layout)
+
+#######
+        button_layout = QHBoxLayout(self)
+        openButton = QPushButton("Open")
+        button_layout.addWidget(openButton)
+        importButton = QPushButton("Import")
+        button_layout.addWidget(importButton)
+        refButton = QPushButton("Reference")
+        button_layout.addWidget(refButton)
+
+        info_layout.addLayout(button_layout)
+
+        info_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        return info_widget
+
 
     def _exit(self, *args):
         # ToDo make close event
