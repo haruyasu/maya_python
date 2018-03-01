@@ -149,6 +149,8 @@ class QHLine(QFrame):
         self.setFrameShadow(QFrame.Sunken)
 
 class Gui(MayaQWidgetBaseMixin, QMainWindow):
+    selectedItem2 = ""
+
     def __init__(self, parent=None):
         super(Gui, self).__init__(parent=parent)
         self.setWindowTitle("TableView")
@@ -318,7 +320,7 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
 
     def _create_manager_ui(self):
         info_widget = QFrame(self)
-        info_layout = QVBoxLayout(info_widget)
+        self.info_layout = QVBoxLayout(info_widget)
 
         category_layout = QGridLayout(self)
 
@@ -338,63 +340,62 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
 
         category_layout.setColumnStretch(1, 1)
 
-        info_layout.addLayout(category_layout)
+        self.info_layout.addLayout(category_layout)
 ######
         path_layout = QHBoxLayout(self)
         path_label = QLabel("Path ")
         path_layout.addWidget(path_label)
-        path_edit = QLineEdit(self)
-        path_edit.setText("F:/maya_python/04_pyside2/")
+        self.path_edit = QLineEdit(self)
+        self.path_edit.setText("F:/maya_python/04_pyside2/")
 
-        dir_path_edit = "F:/maya_python/04_pyside2/"
+        self.dir_path_edit = "F:/maya_python/04_pyside2/"
 
-        folder_name = os.listdir(dir_path_edit)
+        folder_name = os.listdir(self.dir_path_edit)
 
-        path_layout.addWidget(path_edit)
-        info_layout.addLayout(path_layout)
+        path_layout.addWidget(self.path_edit)
+        self.info_layout.addLayout(path_layout)
 #######
         list_layout = QHBoxLayout(self)
-        listWidget1 = QListWidget()
-        listWidget1.addItems(folder_name)
+        self.listWidget1 = QListWidget()
+        self.listWidget1.addItems(folder_name)
+        self.listWidget1.itemClicked.connect(self._change_path2)
+        self.listWidget2 = QListWidget()
+        self.listWidget3 = QListWidget()
 
-        listWidget2 = QListWidget()
-        listWidget2.addItems(["this", "is", "list", "widget"])
+        list_layout.addWidget(self.listWidget1)
+        list_layout.addWidget(self.listWidget2)
+        list_layout.addWidget(self.listWidget3)
+        self.info_layout.addLayout(list_layout)
 
-        listWidget3 = QListWidget()
-        listWidget3.addItems(["this", "is", "list", "widget"])
-        list_layout.addWidget(listWidget1)
-        list_layout.addWidget(listWidget2)
-        list_layout.addWidget(listWidget3)
-        info_layout.addLayout(list_layout)
-
-#######
-        table_layout = QHBoxLayout(self)
-        tableWidget = QTableWidget()
+######
+        self.table_layout = QHBoxLayout(self)
+        self.tableWidget = QTableWidget()
         headerLabels = ["File", "Size", "Type", "UpdateDateTime"]
-        tableWidget.setColumnCount(len(headerLabels))
-        tableWidget.setHorizontalHeaderLabels(headerLabels)
-        tableWidget.verticalHeader().setVisible(False)
+        self.tableWidget.setColumnCount(len(headerLabels))
+        self.tableWidget.setHorizontalHeaderLabels(headerLabels)
+        self.tableWidget.verticalHeader().setVisible(False)
 
         try:
-            tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+            self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         except:
-            tableWidget.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+            self.tableWidget.horizontalHeader().setResizeMode(QHeaderView.Interactive)
 
-        tableWidget.setAlternatingRowColors(True)
-        tableWidget.horizontalHeader().setStretchLastSection(True)
-        dataList = [
-            ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
-            ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
-        ]
-        tableWidget.setRowCount(len(dataList))
+        self.tableWidget.setAlternatingRowColors(True)
+        self.tableWidget.horizontalHeader().setStretchLastSection(True)
 
-        for row, colData in enumerate(dataList):
-            for col, value in enumerate(colData):
-                item = QTableWidgetItem(value)
-                tableWidget.setItem(row, col, item)
-
-        table_layout.addWidget(tableWidget)
-        info_layout.addLayout(table_layout)
+        # dataList = [
+        #     ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
+        #     ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
+        # ]
+        # self.tableWidget.setRowCount(len(dataList))
+        #
+        # for row, colData in enumerate(dataList):
+        #     for col, value in enumerate(colData):
+        #         item = QTableWidgetItem(value)
+        #         self.tableWidget.setItem(row, col, item)
+        #
+        # table_layout.addWidget(self.tableWidget)
+        # info_layout.addLayout(table_layout)
 
 #######
         button_layout = QHBoxLayout(self)
@@ -405,11 +406,80 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         refButton = QPushButton("Reference")
         button_layout.addWidget(refButton)
 
-        info_layout.addLayout(button_layout)
+        self.info_layout.addLayout(button_layout)
 
-        info_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.info_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         return info_widget
+
+    def _change_path2(self):
+        items = self.listWidget1.selectedItems()[0].text() + "/"
+        self.selectedItem = os.path.join(self.dir_path_edit, items)
+        self.path_edit.setText(self.selectedItem)
+
+        folder_name2 = []
+        for x in os.listdir(self.selectedItem):
+            if os.path.isdir(self.selectedItem + x):
+                folder_name2.append(x)
+
+        self.file_name1 = []
+        for x in os.listdir(self.selectedItem):
+            if os.path.isfile(self.selectedItem + x):
+                self.file_name1.append(x)
+
+        self._file_disp1()
+
+        self.listWidget2.clear()
+        self.listWidget3.clear()
+        self.listWidget2.addItems(folder_name2)
+
+        self.listWidget2.itemClicked.connect(self._change_path3)
+
+    def _change_path3(self):
+        items = self.listWidget2.selectedItems()[0].text() + "/"
+        self.selectedItem2 = os.path.join(self.selectedItem, items)
+        self.path_edit.setText(self.selectedItem2)
+
+        folder_name3 = []
+        for x in os.listdir(self.selectedItem2):
+            if os.path.isdir(self.selectedItem2 + x):
+                folder_name3.append(x)
+
+        self.listWidget3.clear()
+        self.listWidget3.addItems(folder_name3)
+
+        self.listWidget3.itemClicked.connect(self._change_path4)
+
+    def _change_path4(self):
+        items = self.listWidget3.selectedItems()[0].text() + "/"
+        selectedItem3 = os.path.join(self.selectedItem2, items)
+        self.path_edit.setText(selectedItem3)
+
+    def _file_disp1(self):
+        # print self.file_name1
+
+        arr = [["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"]]
+        # arr[0].append(self.file_name1)
+
+        for i in range(len(self.file_name1)):
+            arr.append(arr)
+
+        print arr
+
+
+        dataList = [
+            ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
+            ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
+        ]
+        self.tableWidget.setRowCount(len(dataList))
+
+        for row, colData in enumerate(dataList):
+            for col, value in enumerate(colData):
+                item = QTableWidgetItem(value)
+                self.tableWidget.setItem(row, col, item)
+
+        self.table_layout.addWidget(self.tableWidget)
+        self.info_layout.addLayout(self.table_layout)
 
 
     def _exit(self, *args):
