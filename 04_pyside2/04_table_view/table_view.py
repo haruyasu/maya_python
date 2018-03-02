@@ -374,6 +374,9 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         self.tableWidget.setColumnCount(len(headerLabels))
         self.tableWidget.setHorizontalHeaderLabels(headerLabels)
         self.tableWidget.verticalHeader().setVisible(False)
+        self.tableWidget.setColumnWidth(0, 150)
+        self.tableWidget.setColumnWidth(1, 150)
+        self.tableWidget.setColumnWidth(2, 150)
 
         try:
             self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
@@ -383,19 +386,18 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
 
-        # dataList = [
-        #     ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
-        #     ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
-        # ]
-        # self.tableWidget.setRowCount(len(dataList))
-        #
-        # for row, colData in enumerate(dataList):
-        #     for col, value in enumerate(colData):
-        #         item = QTableWidgetItem(value)
-        #         self.tableWidget.setItem(row, col, item)
-        #
-        # table_layout.addWidget(self.tableWidget)
-        # info_layout.addLayout(table_layout)
+        dataList = [
+            ["", "", "", ""],
+        ]
+        self.tableWidget.setRowCount(len(dataList))
+
+        for row, colData in enumerate(dataList):
+            for col, value in enumerate(colData):
+                item = QTableWidgetItem(value)
+                self.tableWidget.setItem(row, col, item)
+
+        self.table_layout.addWidget(self.tableWidget)
+        self.info_layout.addLayout(self.table_layout)
 
 #######
         button_layout = QHBoxLayout(self)
@@ -422,12 +424,12 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
             if os.path.isdir(self.selectedItem + x):
                 folder_name2.append(x)
 
-        self.file_name1 = []
+        self.file_name = []
         for x in os.listdir(self.selectedItem):
             if os.path.isfile(self.selectedItem + x):
-                self.file_name1.append(x)
+                self.file_name.append(x)
 
-        self._file_disp1()
+        self._file_disp()
 
         self.listWidget2.clear()
         self.listWidget3.clear()
@@ -445,6 +447,14 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
             if os.path.isdir(self.selectedItem2 + x):
                 folder_name3.append(x)
 
+
+        self.file_name = []
+        for x in os.listdir(self.selectedItem2):
+            if os.path.isfile(self.selectedItem2 + x):
+                self.file_name.append(x)
+
+        self._file_disp()
+
         self.listWidget3.clear()
         self.listWidget3.addItems(folder_name3)
 
@@ -455,22 +465,19 @@ class Gui(MayaQWidgetBaseMixin, QMainWindow):
         selectedItem3 = os.path.join(self.selectedItem2, items)
         self.path_edit.setText(selectedItem3)
 
-    def _file_disp1(self):
-        # print self.file_name1
+    def _file_disp(self):
+        dataList = [[0 for i in range(4)] for j in range(len(self.file_name))]
 
-        arr = [["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"]]
-        # arr[0].append(self.file_name1)
+        for i in range(len(self.file_name)):
+            dataList[i][0] = self.file_name[i]
+            dataList[i][1] = "100.04KB"
+            dataList[i][2] = "MayaAscii"
+            dataList[i][3] = "2017/01/04 10:00:22"
 
-        for i in range(len(self.file_name1)):
-            arr.append(arr)
-
-        print arr
-
-
-        dataList = [
-            ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
-            ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
-        ]
+        # dataList = [
+        #     ["aaa.ma", "100.04KB", "MayaAscii", "2017/01/04 10:00:22"],
+        #     ["bbb.ma", "222.23KB", "MayaAscii", "2017/02/06 13:00:22"],
+        # ]
         self.tableWidget.setRowCount(len(dataList))
 
         for row, colData in enumerate(dataList):
