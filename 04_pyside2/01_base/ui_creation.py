@@ -16,9 +16,78 @@ def getMayaWindow():
     pointer = mui.MQtUtil.mainWindow()
     return wrapInstance(long(pointer), QWidget)
 
-def createConstraintLayout(label, parentLayout):
+def createConstraintLayout(attribute, parentLayout, checked):
+    # create add the horizontal layout
+    layout = QHBoxLayout()
+    parentLayout.addLayout(layout)
+
+    # create label
+    label = QLabel(attribute)
+    layout.addWidget(label)
+
+    # create font and assign
+    font = QFont()
+    font.setPointSize(10)
+    font.setBold(True)
+    label.setFont(font)
+
+    # add spacer
+    spacer = QSpacerItem(30, 0)
+    layout.addSpacerItem(spacer)
+
+    # loop through attribute and create a checkbox for each one
+    for attr in ["X", "Y", "Z"]:
+        checkbox = QCheckBox(attr)
+        objectName = attribute.partition(":")[0] + attr + "_cmCheckBox"
+        checkbox.setObjectName(objectName)
+        checkbox.setChecked(checked)
+        layout.addWidget(checkbox)
+        checkbox.setMinimumWidth(30)
+        checkbox.setMaximumWidth(30)
+
+    # create spacer and maintain offsets checkbox
+    spacer = QSpacerItem(50, 0)
+    layout.addSpacerItem(spacer)
+
+    offsetCheckbox = QCheckBox("Maintain Offsets")
+    objectName = attribute.partition(":")[0] + "_cmCheckBox_offset"
+    offsetCheckbox.setObjectName(objectName)
+    layout.addWidget(offsetCheckbox)
+
+def createConstrain():
+    # get selection
+    selection = cmds.ls(sl=True)
+    if len(selection) > 0:
+        constraintObj = selection[0]
+        targetObj = selection[1]
+
+    # get checkbox values
+    for attribute in ["Translate", "Rotate", "Scale"]:
+        skipList = []
+        for attr in ["X", "Y", "Z"]:
+            if cmds.control(attribute + attr + "_cmCheckBox", exists=True):
+                ptr = mui.MQtUtil.findControl(attribute + attr + "_cmCheckBox")
+                checkBox = wrapInstance(long(ptr), QCheckBox)
+                value = checkBox.isChecked()
+                if not value:
+                    skipList.append(attr.lower())
+
+        maintainOffset = False
+        # maintain offsets
+        if cmds.control(attribute + "_cmCheckBox_offset", exists=True):
+            ptr = mui.MQtUtil.findControl(attribute + "_cmCheckBox_offset")
+            checkBox = wrapInstance(long(ptr), QCheckBox)
+            maintainOffset = checkBox.isChecked()
 
 
+        # create constraint
+        if len(skipList) != 3:
+            if attribute == "Translate":
+                cmds.pointConstraint(constraintObj, targetObj, skip=skipList, mo=maintainOffset)
+            if attribute == "Rotate":
+                cmds.orientConstraint(constraintObj, targetObj, skip=skipList, mo=maintainOffset)
+            if attribute == "Scale":
+                cmds.scaleConstraint(constraintObj, targetObj, skip=skipList, mo=maintainOffset)
 
 def constraintMaster_UI():
     objectName = "pyConstraintMasterWin"
@@ -32,6 +101,8 @@ def constraintMaster_UI():
     window = QMainWindow(parent)
     window.setObjectName(objectName)
     window.setWindowTitle("Constraint Master")
+    window.setMinimumSize(400, 125)
+    window.setMaximumSize(400, 125)
 
     # create the main widget
     mainWidget = QWidget()
@@ -40,58 +111,17 @@ def constraintMaster_UI():
     # create our main vertical layout
     verticalLayout = QVBoxLayout(mainWidget)
 
-    # create the translate layout
-    translateLayout = QHBoxLayout()
-    verticalLayout.addLayout(translateLayout)
-
-    # translate items: label, tx, checkbox, ty, tz, maintain offsets
-    translateLabel = QLabel("Translate:")
-    translateLayout.addWidget(translateLabel)
-    font = QFont()
-    font.setPointSize(10)
-    font.setBold(True)
-    translateLabel.setFont(font)
-
-    # add spacer
-    spacer = QSpacerItem(30, 0)
-    translateLayout.addSpacerItem(spacer)
-
-    txCheckBox = QCheckBox("X")
-    translateLayout.addWidget(txCheckBox)
-    txCheckBox.setMinimumWidth(30)
-    txCheckBox.setMaximumWidth(30)
-    txCheckBox.setChecked(True)
-
-    tyCheckBox = QCheckBox("Y")
-    translateLayout.addWidget(tyCheckBox)
-    tyCheckBox.setMinimumWidth(30)
-    tyCheckBox.setMaximumWidth(30)
-    tyCheckBox.setChecked(True)
-
-    tzCheckBox = QCheckBox("Z")
-    translateLayout.addWidget(tzCheckBox)
-    tzCheckBox.setMinimumWidth(30)
-    tzCheckBox.setMaximumWidth(30)
-    tzCheckBox.setChecked(True)
-
-    # add spacer
-    spacer = QSpacerItem(50, 0)
-    translateLayout.addSpacerItem(spacer)
-
-    offsetCheckbox = QCheckBox("Maintain Offsets")
-    translateLayout.addWidget(offsetCheckbox)
-
-    # create the rotete layout
-    rotateLayout = QHBoxLayout()
-    verticalLayout.addLayout(rotateLayout)
-
-    # create the scale layout
-    scaleLayout = QHBoxLayout()
-    verticalLayout.addLayout(scaleLayout)
+    # loop throught the attributes, create layout
+    for attribute in ["Translate:", "Rotate:", "Scale:"]:
+        if attribute == "Scale:":
+            createConstraintLayout(attribute, verticalLayout, False)
+        else:
+            createConstraintLayout(attribute, verticalLayout, True)
 
     # create the "create" button
     button = QPushButton("Create Constraint")
     verticalLayout.addWidget(button)
+    button.clicked.connect(createConstrain)
 
     # show the window
     window.show()
