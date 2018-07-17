@@ -10,8 +10,8 @@ class PresetUI():
         self.widgets["mainLayout"] = cmds.columnLayout(w=450, h=250)
         menuBarLayout = cmds.menuBarLayout()
         cmds.menu(label="File")
-        cmds.menuItem(label="Save Preset")
-        cmds.menuItem(label="Load Preset")
+        cmds.menuItem(label="Save Preset", c=self.savePreset)
+        cmds.menuItem(label="Load Preset", c=self.loadPreset)
 
         self.widgets["formLayout"] = cmds.formLayout(w=450, h=250)
 
@@ -70,3 +70,83 @@ class PresetUI():
         colorG = colors[1]
         colorB = colors[2].partition(" ")[0]
         cmds.canvas(self.widgets["swatch"], edit=True, rgbValue=(float(colorR), float(colorG), float(colorB)))
+
+    def savePreset(self, *args):
+        # get values from our UI controls
+        floatFieldValues = cmds.floatFieldGrp(self.widgets["floatField"], q=True, v=True)
+        floatSliderValue = cmds.floatSliderGrp(self.widgets["floatSlider"], q=True, v=True)
+        radioButtonValue = cmds.radioButtonGrp(self.widgets["radioButtonGrp"], q=True, sl=True)
+        inputField = cmds.textField(self.widgets["inputTextField"], q=True, text=True)
+        outputField = cmds.textField(self.widgets["outputTextField"], q=True, text=True)
+        canvasColor = cmds.canvas(self.widgets["swatch"], q=True, rgbValue=True)
+        cb1Value = cmds.checkBox(self.widgets["checkBox1"], q=True, v=True)
+        cb2Value = cmds.checkBox(self.widgets["checkBox2"], q=True, v=True)
+        spotlightValue = cmds.iconTextCheckBox(self.widgets["iconTextCheckBox1"], q=True, v=True)
+        sphereValue = cmds.iconTextCheckBox(self.widgets["iconTextCheckBox2"], q=True, v=True)
+        cubeValue = cmds.iconTextCheckBox(self.widgets["iconTextCheckBox3"], q=True, v=True)
+        coneValue = cmds.iconTextCheckBox(self.widgets["iconTextCheckBox4"], q=True, v=True)
+        toggleValue = cmds.iconTextCheckBox(self.widgets["iconTextCheckBox5"], q=True, v=True)
+
+        # write to file
+        path = cmds.internalVar(upd=True) + "preset.txt"
+        file = open(path, "w")
+
+        # controlType, controlName, query, value
+        file.write(str(["floatFieldGrp", "floatField", "v", str(floatFieldValues)]) + "\n")
+        file.write(str(["floatSliderGrp", "floatSlider", "v", str(floatSliderValue)]) + "\n")
+        file.write(str(["radioButtonGrp", "radioButtonGrp", "sl", str(radioButtonValue)]) + "\n")
+        file.write(str(["textField", "inputTextField", "text", str(inputField)]) + "\n")
+        file.write(str(["textField", "outputTextField", "text", str(outputField)]) + "\n")
+        file.write(str(["canvas", "swatch", "rgbValue", str(canvasColor)]) + "\n")
+        file.write(str(["checkBox", "checkBox1", "v", str(cb1Value)]) + "\n")
+        file.write(str(["checkBox", "checkBox2", "v", str(cb2Value)]) + "\n")
+        file.write(str(["iconTextCheckBox", "iconTextCheckBox1", "v", str(spotlightValue)]) + "\n")
+        file.write(str(["iconTextCheckBox", "iconTextCheckBox2", "v", str(sphereValue)]) + "\n")
+        file.write(str(["iconTextCheckBox", "iconTextCheckBox3", "v", str(cubeValue)]) + "\n")
+        file.write(str(["iconTextCheckBox", "iconTextCheckBox4", "v", str(coneValue)]) + "\n")
+        file.write(str(["iconTextCheckBox", "iconTextCheckBox5", "v", str(toggleValue)]))
+
+        file.close()
+
+    def loadPreset(self, *args):
+        path = cmds.internalVar(upd=True) + "preset.txt"
+        file = open(path, "r")
+
+        for line in file:
+            controlType = line.partition(",")[0]
+            controlType = controlType.translate(None, "\,[]\'")
+
+            controlName = line.partition(",")[2].partition(",")[0]
+            controlName = controlName.translate(None, "\,[]\' ")
+
+            queryType = line.partition(",")[2].partition(",")[2].partition(",")[0]
+            queryType = queryType.translate(None, "\,[]\'")
+
+            if controlType == "floatFieldGrp":
+                data = line.rpartition("[")[2]
+                data = data.translate(None, "\,[]\'")
+                data = data.rstrip("\n")
+                data = data.split(" ")
+                commandString = ("cmds." + controlType + "(self.widgets[" + "\"" + controlName + "\"" + "], edit=True, " + queryType + "=[" + data[0] + " ," + data[1] + " ," + data[2] + ", 0.0])")
+            elif controlType == "textField":
+                data = line.rpartition(",")[2]
+                data = data.translate(None, "\,[]\'")
+                data = data[1:]
+                data = data.rstrip("\n")
+                commandString = ("cmds." + controlType + "(self.widgets[" + "\"" + controlName + "\"" + "], edit=True, " + queryType + "=\"" + str(data) + "\")")
+            elif controlType == "canvas":
+                data = line.rpartition("[")[2]
+                data = data.translate(None, "\,[]\'")
+                data = data.rstrip("\n")
+                data = data.split(" ")
+                commandString = ("cmds." + controlType + "(self.widgets[" + "\"" + controlName + "\"" + "], edit=True, " + queryType + "=[" + data[0] + " ," + data[1] + " ," + data[2] + "])")
+            else:
+                data = line.rpartition(",")[2]
+                data = data.translate(None, "\,[]\' ")
+                data = data.rstrip("\n")
+                commandString = ("cmds." + controlType + "(self.widgets[" + "\"" + controlName + "\"" + "], edit=True, " + queryType + "=" + data + ")")
+
+
+
+            print commandString
+            exec(commandString)
