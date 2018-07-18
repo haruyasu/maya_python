@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 from functools import partial
-# 22:14 video seven
+
 class CharacterPicker():
     def __init__(self):
         # class var
@@ -108,6 +108,3 @@ class CharacterPicker():
             cmds.button(buttonName, edit=True, bgc=buttonBGC)
         else:
             self.createSelectionScriptJob(control, buttonName, buttonBGC)
-
-
-CharacterPicker()

@@ -7,7 +7,7 @@ from itertools import chain
 def getScriptList():
     scripts = collections.OrderedDict()
 
-    scriptPath = "F:\maya_python"
+    scriptPath = "F:/maya_python/"
 
     files = os.listdir(scriptPath)
     files.sort()
@@ -15,7 +15,8 @@ def getScriptList():
     extList = ["py", "mel"]
 
     for f in files:
-        if f == 'lib': continue
+        if f == 'lib':
+            continue
         path = os.path.join(scriptPath, f)
         if os.path.isdir(path):
             scripts[f] = list(chain.from_iterable([glob.glob(os.path.join(path, '*.' + ext)) for ext in extList]))
@@ -81,5 +82,3 @@ def main():
             mel.eval(cmd)
 
         cmds.setParent('..', menu=True)
-
-main()

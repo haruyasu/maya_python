@@ -16,7 +16,7 @@ def UI():
     populateIcons()
 
     # create a dock
-    widgets["dock"] = cmds.dockControl("toolbar_Dock", label="Toolbar" area="left", content=widgets["window"], allowedArea="left")
+    widgets["dock"] = cmds.dockControl("toolbar_Dock", label="Toolbar", area="left", content=widgets["window"], allowedArea="left")
 
 
 def populateIcons():
@@ -34,7 +34,6 @@ def populateIcons():
         # create a frameLayout
         widgets[(name + "_frameLayout")] = cmds.frameLayout(label=name, collapsable=True, parent=widgets["mainLayout"])
         widgets[(name + "_mainLayout")] = cmds.rowColumnLayout(nc=3, parent=widgets[(name + "_frameLayout")])
-
 
     for icon in icons:
         niceName = icon.partition(".")[0]
@@ -62,5 +61,3 @@ def deleteHistory():
     selection = cmds.ls(sl=True)
     for each in selection:
         cmds.delete(ch=True)
-
-UI()
