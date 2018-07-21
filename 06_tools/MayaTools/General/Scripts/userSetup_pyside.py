@@ -40,12 +40,13 @@ def mayaTools_browse(*args):
             import mayaSetup
             mayaSetup.setupTools()
     except:
+        # press cancel button
         pass
 
 def mayaTools_cancel(*args):
     cmds.deleteUI(objectName, wnd=True)
 
-def mayaTools():
+def mayaTools_UI():
     # check to see if the UI already exists and if so, delete
     if cmds.window(objectName, exists=True):
         cmds.deleteUI(objectName, wnd=True)
@@ -97,4 +98,21 @@ def mayaTools():
     # show the window
     window.show()
 
-mayaTools()
+def mayaTools():
+    path = cmds.internalVar(upd=True) + "mayaTools.txt"
+    if os.path.exists(path):
+        f = open(path, "r")
+        mayaToolsDir = f.readline()
+
+        path = mayaToolsDir + "/General/Scripts"
+
+        if os.path.exists(path):
+            if not path in sys.path:
+                sys.path.append(path)
+        # run setup
+        import mayaSetup
+        mayaSetup.setupTools()
+    else:
+        mayaTools_UI()
+
+scriptJobNum = cmds.scriptJob(event=["NewSceneOpened", mayaTools])
