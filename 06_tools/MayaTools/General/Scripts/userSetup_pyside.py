@@ -99,6 +99,7 @@ def mayaTools_UI():
     window.show()
 
 def mayaTools():
+    # C:/Users/xxx/Documents/maya/2017/prefs/mayaTools.txt
     path = cmds.internalVar(upd=True) + "mayaTools.txt"
     if os.path.exists(path):
         f = open(path, "r")
@@ -106,6 +107,7 @@ def mayaTools():
 
         path = mayaToolsDir + "/General/Scripts"
 
+        # add path
         if os.path.exists(path):
             if not path in sys.path:
                 sys.path.append(path)
@@ -113,6 +115,7 @@ def mayaTools():
         import mayaSetup
         mayaSetup.setupTools()
     else:
+        # install tool path
         mayaTools_UI()
 
 scriptJobNum = cmds.scriptJob(event=["NewSceneOpened", mayaTools])
